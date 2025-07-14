@@ -10,6 +10,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,45 +26,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.Icon
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.repeatable
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +55,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -78,8 +72,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.myapplication15.ui.theme.MyApplication15Theme
 import java.text.NumberFormat
 import java.util.Locale
-
-// --- Código del usuario adaptado a este proyecto ---
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,33 +109,21 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
 @Composable
 fun MenuScreen(navController: NavController) {
-    // Animaciones mejoradas
+    // Animación simple y elegante
     val titleScale by animateFloatAsState(
         targetValue = 1f,
         animationSpec = tween(durationMillis = 800),
         label = "titleScale"
     )
     
-    val cardScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 600, delayMillis = 200),
-        label = "cardScale"
-    )
-    
-    val buttonScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 500, delayMillis = 400),
-        label = "buttonScale"
-    )
-    
-    // Animación de pulso para el título
+    // Animación de pulso sutil
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.05f,
+        targetValue = 1.02f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1000),
-            repeatMode = repeatable.RepeatMode.Reverse
+            animation = tween(2000),
+            repeatMode = RepeatMode.Reverse
         ),
         label = "pulse"
     )
@@ -163,24 +143,20 @@ fun MenuScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Título con animación de pulso
+        // Título con animación
         Text(
             text = "🚀 Práctica Android Studio",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier
-                .scale(titleScale * pulseScale)
-                .alpha(0.9f)
+            modifier = Modifier.scale(titleScale * pulseScale)
         )
         
         Spacer(modifier = Modifier.height(20.dp))
         
-        // Tarjeta de créditos con animación
+        // Tarjeta de créditos
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .scale(cardScale),
+            modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
             ),
@@ -226,25 +202,22 @@ fun MenuScreen(navController: NavController) {
         Text(
             text = "🎯 Selecciona una opción:",
             fontSize = 18.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.alpha(0.8f)
+            textAlign = TextAlign.Center
         )
         
         Spacer(modifier = Modifier.height(20.dp))
         
-        // Botones con animaciones
+        // Botones simples
         Button(
             onClick = { navController.navigate("calculator") },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .scale(buttonScale),
+                .height(56.dp),
             colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            shape = RoundedCornerShape(12.dp),
-            elevation = androidx.compose.material3.ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+            shape = RoundedCornerShape(12.dp)
         ) {
             Text(text = "🧮 Calculadora con Spinner", fontSize = 16.sp, fontWeight = FontWeight.Medium)
         }
@@ -255,14 +228,12 @@ fun MenuScreen(navController: NavController) {
             onClick = { navController.navigate("countries") },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .scale(buttonScale),
+                .height(56.dp),
             colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondary,
                 contentColor = MaterialTheme.colorScheme.onSecondary
             ),
-            shape = RoundedCornerShape(12.dp),
-            elevation = androidx.compose.material3.ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+            shape = RoundedCornerShape(12.dp)
         ) {
             Text(text = "🌎 Lista de Países", fontSize = 16.sp, fontWeight = FontWeight.Medium)
         }
@@ -297,6 +268,7 @@ fun CalculatorScreen(navController: NavController) {
     var operacionSeleccionada by remember { mutableStateOf("Sumar") }
     var showMenu by remember { mutableStateOf(false) }
     val operaciones = listOf("Sumar", "Restar", "Multiplicar", "Dividir")
+    
     fun calcular() {
         val num1 = valor1.toDoubleOrNull()
         val num2 = valor2.toDoubleOrNull()
@@ -319,6 +291,7 @@ fun CalculatorScreen(navController: NavController) {
         }
         resultado = "Resultado: $res"
     }
+    
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -353,6 +326,7 @@ fun CalculatorScreen(navController: NavController) {
             Text(text = "🧮 Calculadora", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.height(24.dp))
+        
         OutlinedTextField(
             value = valor1,
             onValueChange = { valor1 = it },
@@ -361,6 +335,7 @@ fun CalculatorScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
+        
         OutlinedTextField(
             value = valor2,
             onValueChange = { valor2 = it },
@@ -369,6 +344,7 @@ fun CalculatorScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
+        
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = operacionSeleccionada,
@@ -402,6 +378,7 @@ fun CalculatorScreen(navController: NavController) {
                 }
             }
         }
+        
         Button(
             onClick = { calcular() },
             modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -412,6 +389,7 @@ fun CalculatorScreen(navController: NavController) {
         ) {
             Text(text = "🧮 OPERAR", fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
+        
         if (resultado.isNotEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -425,6 +403,40 @@ fun CalculatorScreen(navController: NavController) {
                 )
             }
         }
+    }
+}
+}
+
+@Composable
+fun AnimatedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    delay: Long = 0L
+) {
+    var showField by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(Unit) {
+        delay(delay)
+        showField = true
+    }
+    
+    AnimatedVisibility(
+        visible = showField,
+        enter = slideInHorizontally(
+            initialOffsetX = { -it },
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
+        ) + fadeIn()
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(label) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp)
+        )
     }
 }
 
@@ -444,6 +456,7 @@ fun CountriesScreen(navController: NavController) {
         Pair("Uruguay", 3_500_000L)
     )
     var seleccion by remember { mutableStateOf<Pair<String, Long>?>(null) }
+    
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -475,6 +488,7 @@ fun CountriesScreen(navController: NavController) {
             Text(text = "🌎 Lista de Países", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.height(24.dp))
+        
         seleccion?.let { (pais, poblacion) ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -490,6 +504,7 @@ fun CountriesScreen(navController: NavController) {
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
+        
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(paisesYHabitantes.size) { index ->
                 val (pais, _) = paisesYHabitantes[index]

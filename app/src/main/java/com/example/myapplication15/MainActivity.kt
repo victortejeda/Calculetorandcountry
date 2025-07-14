@@ -224,6 +224,7 @@ fun CalculatorScreen(navController: NavController) {
             Text(text = "🧮 Calculadora", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(48.dp))
         }
+        Spacer(modifier = Modifier.height(24.dp))
         OutlinedTextField(
             value = valor1,
             onValueChange = { valor1 = it },
@@ -340,7 +341,7 @@ fun CountriesScreen(navController: NavController) {
             Text(text = "🌎 Lista de Países", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(48.dp))
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         seleccion?.let { (pais, poblacion) ->
             Card(
                 modifier = Modifier.fillMaxWidth(),

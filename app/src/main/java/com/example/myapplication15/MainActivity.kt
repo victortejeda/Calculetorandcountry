@@ -110,94 +110,65 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
 @Composable
 fun MenuScreen(navController: NavController) {
-    // Animaciones
+    // Animación simple y sutil
     val scale by animateFloatAsState(
         targetValue = 1f,
-        animationSpec = tween(durationMillis = 1000),
+        animationSpec = tween(durationMillis = 500),
         label = "scale"
-    )
-    
-    val titleScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 800, delayMillis = 200),
-        label = "titleScale"
-    )
-    
-    val buttonScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 600, delayMillis = 400),
-        label = "buttonScale"
-    )
-    
-    val backgroundColor by animateColorAsState(
-        targetValue = MaterialTheme.colorScheme.primary,
-        animationSpec = tween(durationMillis = 1500),
-        label = "backgroundColor"
     )
     
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.surface,
-                        backgroundColor.copy(alpha = 0.1f)
-                    )
-                )
-            )
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Título principal con animación
         Text(
             text = "🚀 Práctica Android Studio",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.scale(titleScale)
+            modifier = Modifier.scale(scale)
         )
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Sección de créditos con animación
+        // Sección de créditos simple
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .scale(scale),
+            modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
             ),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(12.dp)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "👥 Sustentado por:",
+                    text = "Sustentado por:",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "👨‍💻 Henry Castro\n1-21-4112",
+                    text = "Henry Castro\n1-21-4112",
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "👩‍💻 Lissette Rodríguez\n1-19-3824",
+                    text = "Lissette Rodríguez\n1-19-3824",
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "👨‍💻 Miguel Berroa\n2-16-3694",
+                    text = "Miguel Berroa\n2-16-3694",
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp
@@ -208,64 +179,34 @@ fun MenuScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(32.dp))
         
         Text(
-            text = "🎯 Selecciona una opción:",
+            text = "Selecciona una opción:",
             fontSize = 18.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.scale(scale)
+            textAlign = TextAlign.Center
         )
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Botones con animación
+        // Botones simples
         Button(
             onClick = { navController.navigate("calculator") },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .scale(buttonScale),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ),
-            shape = RoundedCornerShape(12.dp)
+                .height(56.dp),
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text(text = "🧮 Calculadora con Spinner", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(text = "🧮 Calculadora con Spinner", fontSize = 16.sp)
         }
         
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         
         Button(
             onClick = { navController.navigate("countries") },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .scale(buttonScale),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary
-            ),
-            shape = RoundedCornerShape(12.dp)
+                .height(56.dp),
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text(text = "🌎 Lista de Países", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        }
-        
-        // Elementos decorativos animados
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            repeat(3) { index ->
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .scale(scale * (0.8f + index * 0.1f))
-                        .clip(CircleShape)
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-                        )
-                )
-            }
+            Text(text = "🌎 Lista de Países", fontSize = 16.sp)
         }
     }
 }

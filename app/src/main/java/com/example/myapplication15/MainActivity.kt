@@ -40,8 +40,11 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateColorAsState
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.repeatable
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -49,8 +52,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -110,65 +117,103 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
 @Composable
 fun MenuScreen(navController: NavController) {
-    // Animación simple y sutil
-    val scale by animateFloatAsState(
+    // Animaciones mejoradas
+    val titleScale by animateFloatAsState(
         targetValue = 1f,
-        animationSpec = tween(durationMillis = 500),
-        label = "scale"
+        animationSpec = tween(durationMillis = 800),
+        label = "titleScale"
+    )
+    
+    val cardScale by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 600, delayMillis = 200),
+        label = "cardScale"
+    )
+    
+    val buttonScale by animateFloatAsState(
+        targetValue = 1f,
+        animationSpec = tween(durationMillis = 500, delayMillis = 400),
+        label = "buttonScale"
+    )
+    
+    // Animación de pulso para el título
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = repeatable.RepeatMode.Reverse
+        ),
+        label = "pulse"
     )
     
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
+                    )
+                )
+            )
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Título con animación de pulso
         Text(
             text = "🚀 Práctica Android Studio",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.scale(scale)
+            modifier = Modifier
+                .scale(titleScale * pulseScale)
+                .alpha(0.9f)
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         
-        // Sección de créditos simple
+        // Tarjeta de créditos con animación
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .scale(cardScale),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
             ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Sustentado por:",
+                    text = "👥 Sustentado por:",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "Henry Castro\n1-21-4112",
+                    text = "👨‍💻 Henry Castro\n1-21-4112",
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Lissette Rodríguez\n1-19-3824",
+                    text = "👩‍💻 Lissette Rodríguez\n1-19-3824",
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Miguel Berroa\n2-16-3694",
+                    text = "👨‍💻 Miguel Berroa\n2-16-3694",
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 20.sp
@@ -179,34 +224,66 @@ fun MenuScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(32.dp))
         
         Text(
-            text = "Selecciona una opción:",
+            text = "🎯 Selecciona una opción:",
             fontSize = 18.sp,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            modifier = Modifier.alpha(0.8f)
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         
-        // Botones simples
+        // Botones con animaciones
         Button(
             onClick = { navController.navigate("calculator") },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(8.dp)
+                .height(56.dp)
+                .scale(buttonScale),
+            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            shape = RoundedCornerShape(12.dp),
+            elevation = androidx.compose.material3.ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
         ) {
-            Text(text = "🧮 Calculadora con Spinner", fontSize = 16.sp)
+            Text(text = "🧮 Calculadora con Spinner", fontSize = 16.sp, fontWeight = FontWeight.Medium)
         }
         
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         
         Button(
             onClick = { navController.navigate("countries") },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(8.dp)
+                .height(56.dp)
+                .scale(buttonScale),
+            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            ),
+            shape = RoundedCornerShape(12.dp),
+            elevation = androidx.compose.material3.ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
         ) {
-            Text(text = "🌎 Lista de Países", fontSize = 16.sp)
+            Text(text = "🌎 Lista de Países", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        }
+        
+        // Elementos decorativos sutiles
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            repeat(3) { index ->
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .scale(pulseScale * (0.8f + index * 0.1f))
+                        .clip(CircleShape)
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                        )
+                )
+            }
         }
     }
 }

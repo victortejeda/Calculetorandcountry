@@ -34,6 +34,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -201,10 +205,23 @@ fun CalculatorScreen(navController: NavController) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextButton(onClick = { navController.navigateUp() }) {
-                Text("← Volver")
+            Button(
+                onClick = { navController.navigateUp() },
+                modifier = Modifier.height(48.dp),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Volver",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Volver", fontSize = 14.sp, fontWeight = FontWeight.Medium)
             }
-            Text(text = "Calculadora", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(text = "🧮 Calculadora", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(48.dp))
         }
         OutlinedTextField(
@@ -231,7 +248,11 @@ fun CalculatorScreen(navController: NavController) {
                 label = { Text("Operación") },
                 trailingIcon = {
                     IconButton(onClick = { showMenu = !showMenu }) {
-                        Text("▼")
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Abrir menú",
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -254,9 +275,13 @@ fun CalculatorScreen(navController: NavController) {
         }
         Button(
             onClick = { calcular() },
-            modifier = Modifier.fillMaxWidth().height(56.dp)
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
         ) {
-            Text(text = "OPERAR", fontSize = 16.sp)
+            Text(text = "🧮 OPERAR", fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
         if (resultado.isNotEmpty()) {
             Card(
@@ -296,10 +321,23 @@ fun CountriesScreen(navController: NavController) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextButton(onClick = { navController.navigateUp() }) {
-                Text("← Volver")
+            Button(
+                onClick = { navController.navigateUp() },
+                modifier = Modifier.height(48.dp),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Volver",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Volver", fontSize = 14.sp, fontWeight = FontWeight.Medium)
             }
-            Text(text = "Lista de Países", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(text = "🌎 Lista de Países", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(48.dp))
         }
         Spacer(modifier = Modifier.height(16.dp))

@@ -74,9 +74,11 @@ app/
 ## 🖼️ Capturas de pantalla
 
 > Puedes agr<img width="455" height="774" alt="Captura de pantalla 2025-07-15 a las 12 14 32 a  m" src="https://github.com/user-attachments/assets/dd04c917-a811-458c-8c9e-760196cdfa4f" />
-egar aquí imágenes de la app en modo claro y oscuro, mostrando la calculadora, el menú y la lista de países.
 <img width="393" height="779" alt="Captura de pantalla 2025-07-15 a las 12 14 48 a  m" src="https://github.com/user-attachments/assets/dc0cd7e2-2e7a-49d3-a896-e4132f367f52" />
-<img width="396" height="795" alt="Captura de pantalla 2025-07-15 a las 12 15 05 a  m" src="https://githu<img width="429" height="782" alt="Captura de pantalla 2025-07-15 a las 12 15 48 a  m" src="https://github.com/user-attachments/assets/c5b4d600-5e4b-4e4e-a3fd-2897dacb1092" /><img width="471" height="793" alt="Captura de pantalla 2025-07-15 a las 12 15 58 a  m" src="https://github.com/user-attachments/assets/2ed5307e-4f5e-440d-b840-20177d0fdba7" /><img width="432" height="792" alt="Captura de pantalla 2025-07-15 a las 12 16 10 a  m" src="https://github.com/user-attachments/assets/9a64d0fe-c2d0-4308-8bec-0aa5641731ea" />
+<img width="396" height="795" alt="Captura de pantalla 2025-07-15 a las 12 15 05 a  m" src="https://githu
+> <img width="429" height="782" alt="Captura de pantalla 2025-07-15 a las 12 15 48 a  m" src="https://github.com/user-attachments/assets/c5b4d600-5e4b-4e4e-a3fd-2897dacb1092" />
+<img width="471" height="793" alt="Captura de pantalla 2025-07-15 a las 12 15 58 a  m" src="https://github.com/user-attachments/assets/2ed5307e-4f5e-440d-b840-20177d0fdba7" />
+<img width="432" height="792" alt="Captura de pantalla 2025-07-15 a las 12 16 10 a  m" src="https://github.com/user-attachments/assets/9a64d0fe-c2d0-4308-8bec-0aa5641731ea" />
 
 
 b.com/user-attachments/assets/6abd24a0-60e8-4448-a230-53fd36dc8a20" />

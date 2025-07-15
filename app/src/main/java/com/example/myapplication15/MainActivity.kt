@@ -374,7 +374,7 @@ fun CountriesScreen(navController: NavController) {
     }
 
     var seleccion by remember { mutableStateOf<Country?>(null) }
-    val favorites = remember { mutableStateSetOf<String>() }
+    val favorites = remember { mutableStateOf(mutableSetOf<String>()) }
     var currentTime by remember { mutableStateOf("") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm:ss a") }
 
@@ -389,7 +389,7 @@ fun CountriesScreen(navController: NavController) {
     }
 
     val sortedCountries = countries.sortedWith(
-        compareByDescending<Country> { it.name in favorites }
+        compareByDescending<Country> { if (favorites.value.contains(it.name)) 1 else 0 }
             .thenBy { it.name }
     )
 
@@ -412,7 +412,6 @@ fun CountriesScreen(navController: NavController) {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-
             AnimatedVisibility(
                 visible = seleccion != null,
                 enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
@@ -451,7 +450,7 @@ fun CountriesScreen(navController: NavController) {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(items = sortedCountries, key = { it.name }) { country ->
                     val isSelected = seleccion?.name == country.name
-                    val isFavorite = country.name in favorites
+                    val isFavorite = favorites.value.contains(country.name)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -477,7 +476,8 @@ fun CountriesScreen(navController: NavController) {
                             )
                             IconButton(
                                 onClick = {
-                                    if (isFavorite) favorites.remove(country.name) else favorites.add(country.name)
+                                    if (isFavorite) favorites.value.remove(country.name)
+                                    else favorites.value.add(country.name)
                                 }
                             ) {
                                 Icon(

@@ -1,15 +1,17 @@
-/**
- * Este es el archivo principal de la aplicación.
- * Contiene la Actividad principal (MainActivity) y todos los componentes de la interfaz de usuario
- * construidos con Jetpack Compose. La aplicación consta de un menú principal que navega
- * hacia una calculadora y una lista de países.
- */
 package com.example.myapplication15
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,56 +21,47 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.Icon
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.repeatable
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -76,10 +69,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication15.ui.theme.MyApplication15Theme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import java.text.NumberFormat
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
-
-// --- Código del usuario adaptado a este proyecto ---
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,8 +83,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplication15Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AppNavigation(modifier = Modifier.padding(innerPadding))
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppNavigation()
                 }
             }
         }
@@ -96,13 +95,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(modifier: Modifier = Modifier) {
+fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = "menu",
-        modifier = modifier
-    ) {
+    
+    NavHost(navController = navController, startDestination = "menu") {
         composable("menu") {
             MenuScreen(navController)
         }
@@ -115,174 +111,110 @@ fun AppNavigation(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuScreen(navController: NavController) {
-    // Animaciones mejoradas
-    val titleScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 800),
-        label = "titleScale"
-    )
+    var animationTrigger by remember { mutableStateOf(false) }
     
-    val cardScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 600, delayMillis = 200),
-        label = "cardScale"
-    )
+    LaunchedEffect(Unit) {
+        delay(300)
+        animationTrigger = true
+    }
     
-    val buttonScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 500, delayMillis = 400),
-        label = "buttonScale"
-    )
-    
-    // Animación de pulso para el título
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000),
-            repeatMode = repeatable.RepeatMode.Reverse
-        ),
-        label = "pulse"
-    )
-    
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.surface,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Text(
+                        "🧮 Calculadora & Países",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // Título con animación de pulso
-        Text(
-            text = "🚀 Práctica Android Studio",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
+        }
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
-                .scale(titleScale * pulseScale)
-                .alpha(0.9f)
-        )
-        
-        Spacer(modifier = Modifier.height(20.dp))
-        
-        // Tarjeta de créditos con animación
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .scale(cardScale),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-            ),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            AnimatedVisibility(
+                visible = animationTrigger,
+                enter = fadeIn(animationSpec = tween(800)) + slideInVertically(
+                    initialOffsetY = { -100 },
+                    animationSpec = tween(800)
+                ),
+                exit = fadeOut(animationSpec = tween(300))
             ) {
                 Text(
-                    text = "👥 Sustentado por:",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "👨‍💻 Henry Castro\n1-21-4112",
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 20.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "👩‍💻 Lissette Rodríguez\n1-19-3824",
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 20.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "👨‍💻 Miguel Berroa\n2-16-3694",
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 20.sp
+                    text = "¡Bienvenido!",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
                 )
             }
-        }
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        Text(
-            text = "🎯 Selecciona una opción:",
-            fontSize = 18.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.alpha(0.8f)
-        )
-        
-        Spacer(modifier = Modifier.height(20.dp))
-        
-        // Botones con animaciones
-        Button(
-            onClick = { navController.navigate("calculator") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .scale(buttonScale),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ),
-            shape = RoundedCornerShape(12.dp),
-            elevation = androidx.compose.material3.ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
-        ) {
-            Text(text = "🧮 Calculadora con Spinner", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        Button(
-            onClick = { navController.navigate("countries") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .scale(buttonScale),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary
-            ),
-            shape = RoundedCornerShape(12.dp),
-            elevation = androidx.compose.material3.ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
-        ) {
-            Text(text = "🌎 Lista de Países", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        }
-        
-        // Elementos decorativos sutiles
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            repeat(3) { index ->
-                Box(
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            AnimatedVisibility(
+                visible = animationTrigger,
+                enter = fadeIn(animationSpec = tween(800, delayMillis = 200)) + slideInVertically(
+                    initialOffsetY = { 100 },
+                    animationSpec = tween(800, delayMillis = 200)
+                ),
+                exit = fadeOut(animationSpec = tween(300))
+            ) {
+                Button(
+                    onClick = { navController.navigate("calculator") },
                     modifier = Modifier
-                        .size(6.dp)
-                        .scale(pulseScale * (0.8f + index * 0.1f))
-                        .clip(CircleShape)
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                        )
-                )
+                        .fillMaxWidth()
+                        .height(60.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = "🧮 Calculadora",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            AnimatedVisibility(
+                visible = animationTrigger,
+                enter = fadeIn(animationSpec = tween(800, delayMillis = 400)) + slideInVertically(
+                    initialOffsetY = { 100 },
+                    animationSpec = tween(800, delayMillis = 400)
+                ),
+                exit = fadeOut(animationSpec = tween(300))
+            ) {
+                Button(
+                    onClick = { navController.navigate("countries") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = "🌎 Países",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
@@ -291,243 +223,649 @@ fun MenuScreen(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalculatorScreen(navController: NavController) {
-    var valor1 by remember { mutableStateOf("") }
-    var valor2 by remember { mutableStateOf("") }
-    var resultado by remember { mutableStateOf("") }
-    var operacionSeleccionada by remember { mutableStateOf("Sumar") }
-    var showMenu by remember { mutableStateOf(false) }
-    val operaciones = listOf("Sumar", "Restar", "Multiplicar", "Dividir")
-    fun calcular() {
-        val num1 = valor1.toDoubleOrNull()
-        val num2 = valor2.toDoubleOrNull()
-        if (num1 == null || num2 == null) {
-            resultado = "Por favor ingrese valores válidos."
-            return
-        }
-        val res = when (operacionSeleccionada) {
-            "Sumar" -> num1 + num2
-            "Restar" -> num1 - num2
-            "Multiplicar" -> num1 * num2
-            "Dividir" -> {
-                if (num2 == 0.0) {
-                    resultado = "Error: No se puede dividir por cero."
-                    return
-                }
-                num1 / num2
-            }
-            else -> 0.0
-        }
-        resultado = "Resultado: $res"
-    }
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.height(48.dp),
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Volver", fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "🧮 Calculadora", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        OutlinedTextField(
-            value = valor1,
-            onValueChange = { valor1 = it },
-            label = { Text("Ingrese primer valor") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        OutlinedTextField(
-            value = valor2,
-            onValueChange = { valor2 = it },
-            label = { Text("Ingrese segundo valor") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = operacionSeleccionada,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Operación") },
-                trailingIcon = {
-                    IconButton(onClick = { showMenu = !showMenu }) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Abrir menú",
-                            modifier = Modifier.size(24.dp)
-                        )
+    var display by remember { mutableStateOf("0") }
+    var operation by remember { mutableStateOf("") }
+    var firstNumber by remember { mutableStateOf(0.0) }
+    var newNumber by remember { mutableStateOf(true) }
+    var history by remember { mutableStateOf(listOf<String>()) }
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("🧮 Calculadora") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
             )
-            DropdownMenu(
-                expanded = showMenu,
-                onDismissRequest = { showMenu = false },
-                modifier = Modifier.fillMaxWidth()
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            // Display
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(bottom = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             ) {
-                operaciones.forEach { operacion ->
-                    DropdownMenuItem(
-                        text = { Text(operacion) },
-                        onClick = {
-                            operacionSeleccionada = operacion
-                            showMenu = false
-                        }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Bottom
+                ) {
+                    Text(
+                        text = display,
+                        style = MaterialTheme.typography.headlineLarge,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
-        }
-        Button(
-            onClick = { calcular() },
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
-        ) {
-            Text(text = "🧮 OPERAR", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        }
-        if (resultado.isNotEmpty()) {
-            Card(
+            
+            // History
+            if (history.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    )
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        items(history.takeLast(3)) { item ->
+                            Text(
+                                text = item,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        }
+                    }
+                }
+            }
+            
+            // Buttons
+            val buttonSpacing = 8.dp
+            val buttonSize = 70.dp
+            
+            // Row 1: Clear, +/-, %, ÷
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                horizontalArrangement = Arrangement.spacedBy(buttonSpacing)
             ) {
-                Text(
-                    text = resultado,
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Button(
+                    onClick = {
+                        display = "0"
+                        operation = ""
+                        firstNumber = 0.0
+                        newNumber = true
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("C", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        if (display != "0") {
+                            display = if (display.startsWith("-")) display.substring(1) else "-$display"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("+/-", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        val number = display.toDoubleOrNull() ?: 0.0
+                        display = (number / 100).toString()
+                        newNumber = true
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("%", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        operation = "÷"
+                        firstNumber = display.toDoubleOrNull() ?: 0.0
+                        newNumber = true
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("÷", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(buttonSpacing))
+            
+            // Row 2: 7, 8, 9, ×
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(buttonSpacing)
+            ) {
+                Button(
+                    onClick = {
+                        if (newNumber) {
+                            display = "7"
+                            newNumber = false
+                        } else {
+                            display += "7"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("7", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        if (newNumber) {
+                            display = "8"
+                            newNumber = false
+                        } else {
+                            display += "8"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("8", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        if (newNumber) {
+                            display = "9"
+                            newNumber = false
+                        } else {
+                            display += "9"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("9", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        operation = "×"
+                        firstNumber = display.toDoubleOrNull() ?: 0.0
+                        newNumber = true
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("×", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(buttonSpacing))
+            
+            // Row 3: 4, 5, 6, -
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(buttonSpacing)
+            ) {
+                Button(
+                    onClick = {
+                        if (newNumber) {
+                            display = "4"
+                            newNumber = false
+                        } else {
+                            display += "4"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("4", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        if (newNumber) {
+                            display = "5"
+                            newNumber = false
+                        } else {
+                            display += "5"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("5", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        if (newNumber) {
+                            display = "6"
+                            newNumber = false
+                        } else {
+                            display += "6"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("6", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        operation = "-"
+                        firstNumber = display.toDoubleOrNull() ?: 0.0
+                        newNumber = true
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("-", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(buttonSpacing))
+            
+            // Row 4: 1, 2, 3, +
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(buttonSpacing)
+            ) {
+                Button(
+                    onClick = {
+                        if (newNumber) {
+                            display = "1"
+                            newNumber = false
+                        } else {
+                            display += "1"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("1", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        if (newNumber) {
+                            display = "2"
+                            newNumber = false
+                        } else {
+                            display += "2"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("2", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        if (newNumber) {
+                            display = "3"
+                            newNumber = false
+                        } else {
+                            display += "3"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("3", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        operation = "+"
+                        firstNumber = display.toDoubleOrNull() ?: 0.0
+                        newNumber = true
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(buttonSpacing))
+            
+            // Row 5: 0, ., =
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(buttonSpacing)
+            ) {
+                Button(
+                    onClick = {
+                        if (newNumber) {
+                            display = "0"
+                            newNumber = false
+                        } else {
+                            display += "0"
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(2f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = RoundedCornerShape(35.dp)
+                ) {
+                    Text("0", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        if (!display.contains(".")) {
+                            display += "."
+                            newNumber = false
+                        }
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text(".", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                Button(
+                    onClick = {
+                        val secondNumber = display.toDoubleOrNull() ?: 0.0
+                        val result = when (operation) {
+                            "+" -> firstNumber + secondNumber
+                            "-" -> firstNumber - secondNumber
+                            "×" -> firstNumber * secondNumber
+                            "÷" -> if (secondNumber != 0.0) firstNumber / secondNumber else 0.0
+                            else -> secondNumber
+                        }
+                        
+                        val operationSymbol = when (operation) {
+                            "+" -> "+"
+                            "-" -> "-"
+                            "×" -> "×"
+                            "÷" -> "÷"
+                            else -> ""
+                        }
+                        
+                        if (operation.isNotEmpty()) {
+                            val historyEntry = "${firstNumber} $operationSymbol $secondNumber = $result"
+                            history = history + historyEntry
+                        }
+                        
+                        display = result.toString()
+                        operation = ""
+                        firstNumber = result
+                        newNumber = true
+                    },
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = CircleShape
+                ) {
+                    Text("=", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
 }
+
+data class Country(
+    val name: String,
+    val population: Long,
+    val flagEmoji: String,
+    val timeZoneId: String
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountriesScreen(navController: NavController) {
-    val paisesYHabitantes = listOf(
-        Pair("Argentina", 45_000_000L),
-        Pair("Chile", 19_000_000L),
-        Pair("Paraguay", 7_000_000L),
-        Pair("Bolivia", 12_000_000L),
-        Pair("Perú", 33_000_000L),
-        Pair("Ecuador", 18_000_000L),
-        Pair("Brasil", 215_000_000L),
-        Pair("Colombia", 51_000_000L),
-        Pair("Venezuela", 28_000_000L),
-        Pair("Uruguay", 3_500_000L)
+    val countries = remember {
+        listOf(
+            Country("Argentina", 45_810_000L, "🇦🇷", "America/Argentina/Buenos_Aires"),
+            Country("Bolivia", 12_080_000L, "🇧🇴", "America/La_Paz"),
+            Country("Brasil", 215_300_000L, "🇧🇷", "America/Sao_Paulo"),
+            Country("Chile", 19_490_000L, "🇨🇱", "America/Santiago"),
+            Country("Colombia", 51_520_000L, "🇨🇴", "America/Bogota"),
+            Country("Ecuador", 17_800_000L, "🇪🇨", "America/Guayaquil"),
+            Country("Paraguay", 7_359_000L, "🇵🇾", "America/Asuncion"),
+            Country("Perú", 33_720_000L, "🇵🇪", "America/Lima"),
+            Country("Uruguay", 3_426_000L, "🇺🇾", "America/Montevideo"),
+            Country("Venezuela", 28_200_000L, "🇻🇪", "America/Caracas"),
+            Country("Rep. Dominicana", 11_120_000L, "🇩🇴", "America/Santo_Domingo")
+        )
+    }
+
+    var seleccion by remember { mutableStateOf<Country?>(null) }
+    val favorites = remember { mutableStateOf(mutableSetOf<String>()) }
+    var currentTime by remember { mutableStateOf("") }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm:ss a") }
+
+    LaunchedEffect(seleccion) {
+        if (seleccion != null) {
+            val zoneId = ZoneId.of(seleccion!!.timeZoneId)
+            while (isActive) {
+                currentTime = LocalTime.now(zoneId).format(timeFormatter)
+                delay(1000)
+            }
+        }
+    }
+
+    val sortedCountries = countries.sortedWith(
+        compareByDescending<Country> { if (favorites.value.contains(it.name)) 1 else 0 }
+            .thenBy { it.name }
     )
-    var seleccion by remember { mutableStateOf<Pair<String, Long>?>(null) }
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("🌎 Lista de Países") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            )
+        }
+    ) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+            AnimatedVisibility(
+                visible = seleccion != null,
+                enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut()
             ) {
-                Button(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.height(48.dp),
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Volver", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                seleccion?.let { country ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "${country.flagEmoji} ${country.name}",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Población: ${NumberFormat.getInstance(Locale.getDefault()).format(country.population)}",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Hora Local: $currentTime",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        }
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "🌎 Lista de Países", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        seleccion?.let { (pais, poblacion) ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-            ) {
-                val poblacionFormateada = NumberFormat.getInstance(Locale.getDefault()).format(poblacion)
-                Text(
-                    text = "La población de $pais es $poblacionFormateada habitantes.",
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(paisesYHabitantes.size) { index ->
-                val (pais, _) = paisesYHabitantes[index]
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { seleccion = paisesYHabitantes[index] }
-                ) {
-                    Text(
-                        text = pais,
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        fontSize = 16.sp
-                    )
+
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(items = sortedCountries, key = { it.name }) { country ->
+                    val isSelected = seleccion?.name == country.name
+                    val isFavorite = favorites.value.contains(country.name)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { seleccion = if (isSelected) null else country },
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .height(IntrinsicSize.Min),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = country.flagEmoji, fontSize = 24.sp)
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = country.name,
+                                modifier = Modifier.weight(1f).padding(vertical = 16.dp),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                            IconButton(
+                                onClick = {
+                                    if (isFavorite) favorites.value.remove(country.name)
+                                    else favorites.value.add(country.name)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                                    contentDescription = "Marcar como favorito",
+                                    tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun MenuScreenPreview() {
-    MyApplication15Theme {
-        MenuScreen(rememberNavController())
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CalculatorScreenPreview() {
-    MyApplication15Theme {
-        CalculatorScreen(rememberNavController())
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CountriesScreenPreview() {
-    MyApplication15Theme {
-        CountriesScreen(rememberNavController())
     }
 }

@@ -1,62 +1,39 @@
-/**
- * Este es el archivo principal de la aplicación.
- * Contiene la Actividad principal (MainActivity) y todos los componentes de la interfaz de usuario
- * construidos con Jetpack Compose. La aplicación consta de un menú principal que navega
- * hacia una calculadora y una lista de países.
- */
 package com.example.myapplication15
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
@@ -70,8 +47,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication15.ui.theme.MyApplication15Theme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import java.text.NumberFormat
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.UUID
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,201 +62,124 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplication15Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AppNavigation(modifier = Modifier.padding(innerPadding))
-                }
+                AppNavigation()
             }
         }
     }
 }
 
 @Composable
-fun AppNavigation(modifier: Modifier = Modifier) {
+fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "menu",
-        modifier = modifier
+        startDestination = "menu"
     ) {
-        composable("menu") {
-            MenuScreen(navController)
-        }
-        composable("calculator") {
-            CalculatorScreen(navController)
-        }
-        composable("countries") {
-            CountriesScreen(navController)
-        }
+        composable("menu") { MenuScreen(navController) }
+        composable("calculator") { CalculatorScreen(navController) }
+        composable("countries") { CountriesScreen(navController) }
     }
 }
 
 @Composable
 fun MenuScreen(navController: NavController) {
-    // Animación simple y elegante
-    val titleScale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 800),
-        label = "titleScale"
+    var startAnimation by remember { mutableStateOf(false) }
+    val scaleIn by animateFloatAsState(
+        targetValue = if (startAnimation) 1f else 0.8f,
+        animationSpec = tween(durationMillis = 500),
+        label = "scaleIn"
     )
-    
-    // Animación de pulso sutil
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.02f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000),
-            repeatMode = RepeatMode.Reverse
-        ),
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(animation = tween(1000), repeatMode = RepeatMode.Reverse),
         label = "pulse"
     )
-    
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.surface,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
+    LaunchedEffect(Unit) { startAnimation = true }
+
+    Scaffold { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                            MaterialTheme.colorScheme.surface
+                        )
                     )
                 )
+                .padding(24.dp)
+                .scale(scaleIn)
+                .alpha(scaleIn),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "🚀 Práctica Android Studio",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.scale(pulseScale)
             )
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // Título con animación
-        Text(
-            text = "🚀 Práctica Android Studio",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.scale(titleScale * pulseScale)
-        )
-        
-        Spacer(modifier = Modifier.height(20.dp))
-        
-        // Tarjeta de créditos
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-            ),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Spacer(modifier = Modifier.height(40.dp))
+            Text(text = "🎯 Selecciona una opción:", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(
+                onClick = { navController.navigate("calculator") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
             ) {
-                Text(
-                    text = "👥 Sustentado por:",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "👨‍💻 Henry Castro\n1-21-4112",
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 20.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "👩‍💻 Lissette Rodríguez\n1-19-3824",
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 20.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "👨‍💻 Miguel Berroa\n2-16-3694",
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 20.sp
-                )
+                Text(text = "🧮 Calculadora con Historial", fontWeight = FontWeight.Medium)
             }
-        }
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        Text(
-            text = "🎯 Selecciona una opción:",
-            fontSize = 18.sp,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(modifier = Modifier.height(20.dp))
-        
-        // Botones simples
-        Button(
-            onClick = { navController.navigate("calculator") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(text = "🧮 Calculadora con Spinner", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        Button(
-            onClick = { navController.navigate("countries") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(text = "🌎 Lista de Países", fontSize = 16.sp, fontWeight = FontWeight.Medium)
-        }
-        
-        // Elementos decorativos sutiles
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            repeat(3) { index ->
-                Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .scale(pulseScale * (0.8f + index * 0.1f))
-                        .clip(CircleShape)
-                        .background(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                        )
-                )
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = { navController.navigate("countries") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+            ) {
+                Text(text = "🌎 Lista Interactiva de Países", fontWeight = FontWeight.Medium)
             }
         }
     }
 }
+
+// Data class para el historial para asegurar una clave única
+data class HistoryEntry(val id: UUID = UUID.randomUUID(), val calculation: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalculatorScreen(navController: NavController) {
     var valor1 by remember { mutableStateOf("") }
     var valor2 by remember { mutableStateOf("") }
-    var resultado by remember { mutableStateOf("") }
+    var resultado by remember { mutableStateOf<String?>(null) }
     var operacionSeleccionada by remember { mutableStateOf("Sumar") }
     var showMenu by remember { mutableStateOf(false) }
     val operaciones = listOf("Sumar", "Restar", "Multiplicar", "Dividir")
-    
+    // El historial ahora es una lista de HistoryEntry
+    val history = remember { mutableStateListOf<HistoryEntry>() }
+
+    fun getOperatorSymbol(op: String): String = when (op) {
+        "Sumar" -> "+"
+        "Restar" -> "-"
+        "Multiplicar" -> "×"
+        "Dividir" -> "÷"
+        else -> ""
+    }
+
     fun calcular() {
         val num1 = valor1.toDoubleOrNull()
         val num2 = valor2.toDoubleOrNull()
         if (num1 == null || num2 == null) {
-            resultado = "Por favor ingrese valores válidos."
+            resultado = "Error: Ingrese valores numéricos válidos."
             return
         }
         val res = when (operacionSeleccionada) {
@@ -289,234 +195,299 @@ fun CalculatorScreen(navController: NavController) {
             }
             else -> 0.0
         }
-        resultado = "Resultado: $res"
+        val formattedResult = NumberFormat.getInstance().format(res)
+        resultado = "Resultado: $formattedResult"
+        val historyText =
+            "${NumberFormat.getInstance().format(num1)} ${getOperatorSymbol(operacionSeleccionada)} ${
+                NumberFormat.getInstance().format(num2)
+            } = $formattedResult"
+        // Se añade un nuevo objeto HistoryEntry al historial
+        history.add(0, HistoryEntry(calculation = historyText))
     }
-    
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("🧮 Calculadora") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            )
+        }
+    ) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = valor1,
+                    onValueChange = { valor1 = it.replace(',', '.') },
+                    label = { Text("Valor 1") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = valor2,
+                    onValueChange = { valor2 = it.replace(',', '.') },
+                    label = { Text("Valor 2") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+            }
+            Box {
+                OutlinedTextField(
+                    value = operacionSeleccionada,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Operación") },
+                    trailingIcon = {
+                        IconButton(onClick = { showMenu = !showMenu }) {
+                            Icon(Icons.Default.KeyboardArrowDown, "Abrir menú")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    operaciones.forEach { op ->
+                        DropdownMenuItem(
+                            text = { Text(op) },
+                            onClick = {
+                                operacionSeleccionada = op
+                                showMenu = false
+                            }
+                        )
+                    }
+                }
+            }
+            Button(
+                onClick = { calcular() },
+                modifier = Modifier.fillMaxWidth().height(50.dp)
             ) {
-                Button(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.height(48.dp),
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                Text(text = "🧮 OPERAR", fontWeight = FontWeight.Bold)
+            }
+            resultado?.let {
+                val isError = it.startsWith("Error:")
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isError) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
                     )
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
-                        modifier = Modifier.size(20.dp)
+                    Text(
+                        text = it,
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (isError) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Volver", fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "🧮 Calculadora", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        OutlinedTextField(
-            value = valor1,
-            onValueChange = { valor1 = it },
-            label = { Text("Ingrese primer valor") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        
-        OutlinedTextField(
-            value = valor2,
-            onValueChange = { valor2 = it },
-            label = { Text("Ingrese segundo valor") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = operacionSeleccionada,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Operación") },
-                trailingIcon = {
-                    IconButton(onClick = { showMenu = !showMenu }) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Abrir menú",
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            DropdownMenu(
-                expanded = showMenu,
-                onDismissRequest = { showMenu = false },
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                operaciones.forEach { operacion ->
-                    DropdownMenuItem(
-                        text = { Text(operacion) },
-                        onClick = {
-                            operacionSeleccionada = operacion
-                            showMenu = false
+                Text("Historial", style = MaterialTheme.typography.titleMedium)
+                if (history.isNotEmpty()) {
+                    TextButton(onClick = { history.clear() }) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Limpiar historial",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text("Limpiar Todo")
+                    }
+                }
+            }
+            if (history.isEmpty()) {
+                Text(
+                    "Aún no hay operaciones.",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    // La clave ahora es el ID único del HistoryEntry, solucionando el crash
+                    items(items = history, key = { it.id }) { entry ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(entry.calculation, modifier = Modifier.weight(1f))
+                            IconButton(onClick = { history.remove(entry) }) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Borrar entrada",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
                         }
-                    )
+                    }
                 }
             }
         }
-        
-        Button(
-            onClick = { calcular() },
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
-        ) {
-            Text(text = "🧮 OPERAR", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        }
-        
-        if (resultado.isNotEmpty()) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-            ) {
-                Text(
-                    text = resultado,
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
     }
-}
 }
 
-@Composable
-fun AnimatedTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    delay: Long = 0L
-) {
-    var showField by remember { mutableStateOf(false) }
-    
-    LaunchedEffect(Unit) {
-        delay(delay)
-        showField = true
-    }
-    
-    AnimatedVisibility(
-        visible = showField,
-        enter = slideInHorizontally(
-            initialOffsetX = { -it },
-            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
-        ) + fadeIn()
-    ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Text(label) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp)
-        )
-    }
-}
+data class Country(
+    val name: String,
+    val population: Long,
+    val flagEmoji: String,
+    val timeZoneId: String
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountriesScreen(navController: NavController) {
-    val paisesYHabitantes = listOf(
-        Pair("Argentina", 45_000_000L),
-        Pair("Chile", 19_000_000L),
-        Pair("Paraguay", 7_000_000L),
-        Pair("Bolivia", 12_000_000L),
-        Pair("Perú", 33_000_000L),
-        Pair("Ecuador", 18_000_000L),
-        Pair("Brasil", 215_000_000L),
-        Pair("Colombia", 51_000_000L),
-        Pair("Venezuela", 28_000_000L),
-        Pair("Uruguay", 3_500_000L)
+    val countries = remember {
+        listOf(
+            Country("Argentina", 45_810_000L, "🇦🇷", "America/Argentina/Buenos_Aires"),
+            Country("Bolivia", 12_080_000L, "🇧🇴", "America/La_Paz"),
+            Country("Brasil", 215_300_000L, "🇧🇷", "America/Sao_Paulo"),
+            Country("Chile", 19_490_000L, "🇨🇱", "America/Santiago"),
+            Country("Colombia", 51_520_000L, "🇨🇴", "America/Bogota"),
+            Country("Ecuador", 17_800_000L, "🇪🇨", "America/Guayaquil"),
+            Country("Paraguay", 7_359_000L, "🇵🇾", "America/Asuncion"),
+            Country("Perú", 33_720_000L, "🇵🇪", "America/Lima"),
+            Country("Uruguay", 3_426_000L, "🇺🇾", "America/Montevideo"),
+            Country("Venezuela", 28_200_000L, "🇻🇪", "America/Caracas"),
+            Country("Rep. Dominicana", 11_120_000L, "🇩🇴", "America/Santo_Domingo")
+        )
+    }
+
+    var seleccion by remember { mutableStateOf<Country?>(null) }
+    val favorites = remember { mutableStateSetOf<String>() }
+    var currentTime by remember { mutableStateOf("") }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm:ss a") }
+
+    LaunchedEffect(seleccion) {
+        if (seleccion != null) {
+            val zoneId = ZoneId.of(seleccion!!.timeZoneId)
+            while (isActive) {
+                currentTime = LocalTime.now(zoneId).format(timeFormatter)
+                delay(1000)
+            }
+        }
+    }
+
+    val sortedCountries = countries.sortedWith(
+        compareByDescending<Country> { it.name in favorites }
+            .thenBy { it.name }
     )
-    var seleccion by remember { mutableStateOf<Pair<String, Long>?>(null) }
-    
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("🌎 Lista de Países") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+            )
+        }
+    ) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+
+            AnimatedVisibility(
+                visible = seleccion != null,
+                enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut()
             ) {
-                Button(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.height(48.dp),
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Volver", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                seleccion?.let { country ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "${country.flagEmoji} ${country.name}",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Población: ${NumberFormat.getInstance(Locale.getDefault()).format(country.population)}",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Hora Local: $currentTime",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        }
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "🌎 Lista de Países", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        seleccion?.let { (pais, poblacion) ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-            ) {
-                val poblacionFormateada = NumberFormat.getInstance(Locale.getDefault()).format(poblacion)
-                Text(
-                    text = "La población de $pais es $poblacionFormateada habitantes.",
-                    modifier = Modifier.padding(16.dp),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(paisesYHabitantes.size) { index ->
-                val (pais, _) = paisesYHabitantes[index]
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { seleccion = paisesYHabitantes[index] }
-                ) {
-                    Text(
-                        text = pais,
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        fontSize = 16.sp
-                    )
+
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(items = sortedCountries, key = { it.name }) { country ->
+                    val isSelected = seleccion?.name == country.name
+                    val isFavorite = country.name in favorites
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { seleccion = if (isSelected) null else country },
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .height(IntrinsicSize.Min),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = country.flagEmoji, fontSize = 24.sp)
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = country.name,
+                                modifier = Modifier.weight(1f).padding(vertical = 16.dp),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                            )
+                            IconButton(
+                                onClick = {
+                                    if (isFavorite) favorites.remove(country.name) else favorites.add(country.name)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                                    contentDescription = "Marcar como favorito",
+                                    tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

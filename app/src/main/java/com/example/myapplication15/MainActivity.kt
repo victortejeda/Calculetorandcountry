@@ -1,3 +1,7 @@
+// MainActivity.kt
+// Calculadora & Países - App de práctica Android Jetpack Compose
+// Documentación completa en cada función y bloque importante
+
 package com.example.myapplication15
 
 import android.os.Bundle
@@ -56,6 +60,9 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
 
+/**
+ * Actividad principal de la app. Inicializa el tema y la navegación.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +75,10 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Controlador de navegación principal de la app.
+ * Define las rutas: menú, calculadora y países.
+ */
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -81,8 +92,13 @@ fun AppNavigation() {
     }
 }
 
+/**
+ * Pantalla de menú principal con animaciones, créditos y navegación.
+ * Incluye animación de pulso, gradiente de fondo y botones con iconos/emojis.
+ */
 @Composable
 fun MenuScreen(navController: NavController) {
+    // Animación de entrada y pulso
     var startAnimation by remember { mutableStateOf(false) }
     val scaleIn by animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0.8f,
@@ -117,6 +133,7 @@ fun MenuScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Título animado
             Text(
                 text = "🚀 Práctica Android Studio",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -125,8 +142,7 @@ fun MenuScreen(navController: NavController) {
             )
             
             Spacer(modifier = Modifier.height(20.dp))
-            
-            // Tarjeta de créditos con animación
+            // Tarjeta de créditos animada
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -172,7 +188,7 @@ fun MenuScreen(navController: NavController) {
             }
             
             Spacer(modifier = Modifier.height(20.dp))
-            
+            // Subtítulo
             Text(
                 text = "🎯 Selecciona una opción:",
                 style = MaterialTheme.typography.titleMedium,
@@ -180,8 +196,7 @@ fun MenuScreen(navController: NavController) {
             )
             
             Spacer(modifier = Modifier.height(20.dp))
-            
-            // Botones con animaciones
+            // Botón para calculadora
             Button(
                 onClick = { navController.navigate("calculator") },
                 modifier = Modifier
@@ -199,7 +214,7 @@ fun MenuScreen(navController: NavController) {
             }
             
             Spacer(modifier = Modifier.height(12.dp))
-            
+            // Botón para países
             Button(
                 onClick = { navController.navigate("countries") },
                 modifier = Modifier
@@ -216,9 +231,8 @@ fun MenuScreen(navController: NavController) {
                 Text(text = "🌎 Lista Interactiva de Países", fontSize = 16.sp, fontWeight = FontWeight.Medium)
             }
             
-            // Elementos decorativos sutiles
+            // Elementos decorativos sutiles (puntos animados)
             Spacer(modifier = Modifier.height(24.dp))
-            
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -238,21 +252,29 @@ fun MenuScreen(navController: NavController) {
     }
 }
 
-// Data class para el historial para asegurar una clave única
+/**
+ * Data class para el historial de la calculadora.
+ * Se usa un UUID para evitar problemas de claves duplicadas en listas.
+ */
 data class HistoryEntry(val id: UUID = UUID.randomUUID(), val calculation: String)
 
+/**
+ * Pantalla de calculadora con historial, operaciones y manejo de errores.
+ * Incluye iconos para borrar historial y operaciones, y animaciones de Material 3.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalculatorScreen(navController: NavController) {
+    // Estado de los campos y el historial
     var valor1 by remember { mutableStateOf("") }
     var valor2 by remember { mutableStateOf("") }
     var resultado by remember { mutableStateOf<String?>(null) }
     var operacionSeleccionada by remember { mutableStateOf("Sumar") }
     var showMenu by remember { mutableStateOf(false) }
     val operaciones = listOf("Sumar", "Restar", "Multiplicar", "Dividir")
-    // El historial ahora es una lista de HistoryEntry
     val history = remember { mutableStateListOf<HistoryEntry>() }
 
+    // Devuelve el símbolo de la operación
     fun getOperatorSymbol(op: String): String = when (op) {
         "Sumar" -> "+"
         "Restar" -> "-"
@@ -261,6 +283,7 @@ fun CalculatorScreen(navController: NavController) {
         else -> ""
     }
 
+    // Realiza el cálculo y actualiza el historial
     fun calcular() {
         val num1 = valor1.toDoubleOrNull()
         val num2 = valor2.toDoubleOrNull()
@@ -287,7 +310,6 @@ fun CalculatorScreen(navController: NavController) {
             "${NumberFormat.getInstance().format(num1)} ${getOperatorSymbol(operacionSeleccionada)} ${
                 NumberFormat.getInstance().format(num2)
             } = $formattedResult"
-        // Se añade un nuevo objeto HistoryEntry al historial
         history.add(0, HistoryEntry(calculation = historyText))
     }
 
@@ -296,6 +318,7 @@ fun CalculatorScreen(navController: NavController) {
             TopAppBar(
                 title = { Text("🧮 Calculadora") },
                 navigationIcon = {
+                    // Icono de volver (Material Icon)
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
@@ -311,18 +334,21 @@ fun CalculatorScreen(navController: NavController) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // ... (La parte de la UI para los botones y campos de texto no cambia)
+            // Campos de entrada
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(value = valor1, onValueChange = { valor1 = it.replace(',', '.') }, label = { Text("Valor 1") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), singleLine = true)
                 OutlinedTextField(value = valor2, onValueChange = { valor2 = it.replace(',', '.') }, label = { Text("Valor 2") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), singleLine = true)
             }
+            // Menú desplegable para seleccionar operación
             Box {
                 OutlinedTextField(value = operacionSeleccionada, onValueChange = {}, readOnly = true, label = { Text("Operación") }, trailingIcon = { IconButton(onClick = { showMenu = !showMenu }) { Icon(Icons.Default.KeyboardArrowDown, "Abrir menú") } }, modifier = Modifier.fillMaxWidth())
                 DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }, modifier = Modifier.fillMaxWidth()) {
                     operaciones.forEach { op -> DropdownMenuItem(text = { Text(op) }, onClick = { operacionSeleccionada = op; showMenu = false }) }
                 }
             }
+            // Botón de operar
             Button(onClick = { calcular() }, modifier = Modifier.fillMaxWidth().height(50.dp)) { Text(text = "🧮 OPERAR", fontWeight = FontWeight.Bold) }
+            // Resultado
             resultado?.let {
                 val isError = it.startsWith("Error:")
                 Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = if (isError) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer)) {
@@ -330,9 +356,11 @@ fun CalculatorScreen(navController: NavController) {
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
+            // Historial de operaciones
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("Historial", style = MaterialTheme.typography.titleMedium)
                 if (history.isNotEmpty()) {
+                    // Botón para limpiar historial (icono de borrar)
                     TextButton(onClick = { history.clear() }) {
                         Icon(Icons.Default.Delete, contentDescription = "Limpiar historial", modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.size(4.dp))
@@ -343,6 +371,7 @@ fun CalculatorScreen(navController: NavController) {
             if (history.isEmpty()) {
                 Text("Aún no hay operaciones.", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
             } else {
+                // Card con historial y scroll
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -356,7 +385,6 @@ fun CalculatorScreen(navController: NavController) {
                             .fillMaxSize()
                             .padding(8.dp)
                     ) {
-                        // La clave ahora es el ID único del HistoryEntry, solucionando el crash
                         items(items = history, key = { it.id }) { entry ->
                             Row(
                                 modifier = Modifier
@@ -370,6 +398,7 @@ fun CalculatorScreen(navController: NavController) {
                                     modifier = Modifier.weight(1f),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
+                                // Botón para borrar entrada individual (icono de borrar)
                                 IconButton(onClick = { history.remove(entry) }) {
                                     Icon(
                                         Icons.Default.Delete, 
@@ -386,6 +415,9 @@ fun CalculatorScreen(navController: NavController) {
     }
 }
 
+/**
+ * Data class para países, usada en la pantalla de países.
+ */
 data class Country(
     val name: String,
     val population: Long,
@@ -393,9 +425,14 @@ data class Country(
     val timeZoneId: String
 )
 
+/**
+ * Pantalla de países con favoritos, animaciones y hora local.
+ * Incluye iconos de estrella para favoritos y navegación.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountriesScreen(navController: NavController) {
+    // Lista de países hardcodeada
     val countries = remember {
         listOf(
             Country("Argentina", 45_810_000L, "🇦🇷", "America/Argentina/Buenos_Aires"),
@@ -413,10 +450,12 @@ fun CountriesScreen(navController: NavController) {
     }
 
     var seleccion by remember { mutableStateOf<Country?>(null) }
+    // Favoritos gestionados con mutableStateOf(mutableSetOf())
     val favorites = remember { mutableStateOf(mutableSetOf<String>()) }
     var currentTime by remember { mutableStateOf("") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm:ss a") }
 
+    // Efecto para actualizar la hora local del país seleccionado
     LaunchedEffect(seleccion) {
         if (seleccion != null) {
             val zoneId = ZoneId.of(seleccion!!.timeZoneId)
@@ -427,6 +466,7 @@ fun CountriesScreen(navController: NavController) {
         }
     }
 
+    // Ordena países: favoritos primero, luego alfabético
     val sortedCountries = countries.sortedWith(
         compareByDescending<Country> { if (favorites.value.contains(it.name)) 1 else 0 }
             .thenBy { it.name }
@@ -437,6 +477,7 @@ fun CountriesScreen(navController: NavController) {
             TopAppBar(
                 title = { Text("🌎 Lista de Países") },
                 navigationIcon = {
+                    // Icono de volver (Material Icon)
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
                     }
@@ -451,7 +492,7 @@ fun CountriesScreen(navController: NavController) {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-
+            // Card animada con detalles del país seleccionado
             AnimatedVisibility(
                 visible = seleccion != null,
                 enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
@@ -474,7 +515,7 @@ fun CountriesScreen(navController: NavController) {
                     }
                 }
             }
-
+            // Lista de países con favoritos
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(items = sortedCountries, key = { it.name }) { country ->
                     val isSelected = seleccion?.name == country.name
@@ -494,9 +535,12 @@ fun CountriesScreen(navController: NavController) {
                                 .height(IntrinsicSize.Min),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // Emoji de bandera
                             Text(text = country.flagEmoji, fontSize = 24.sp)
                             Spacer(modifier = Modifier.width(16.dp))
+                            // Nombre del país
                             Text(text = country.name, modifier = Modifier.weight(1f).padding(vertical = 16.dp), style = MaterialTheme.typography.bodyLarge, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+                            // Icono de favorito (estrella)
                             IconButton(onClick = { if (isFavorite) favorites.value.remove(country.name) else favorites.value.add(country.name) }) {
                                 Icon(imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder, contentDescription = "Marcar como favorito", tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant)
                             }
@@ -508,11 +552,7 @@ fun CountriesScreen(navController: NavController) {
     }
 }
 
-// NO NECESITAMOS ESTAS FUNCIONES FALSAS
-// private fun Unit.add(name: String) { ... }
-// private fun Unit.remove(name: String) { ... }
-// ... etc.
-
+// Previews para desarrollo visual
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun MenuScreenPreview() {

@@ -1,36 +1,48 @@
-# 📱 Calculadora Android
+# 📱 Calculadora & Países - Android Jetpack Compose
 
-¡Bienvenido! Este proyecto es una aplicación de calculadora para Android desarrollada en **Kotlin** usando **Jetpack Compose** para la interfaz de usuario. 🚀
-
----
-
-## 🏆 Nivel y propósito
-
-> 🧑‍💻 **Práctica de nivel junior**
->
-> Ideal para quienes están aprendiendo desarrollo Android moderno. Permite familiarizarse con conceptos básicos de UI, navegación y manejo de estado en Compose.
+¡Bienvenido a la **Calculadora & Países**! Esta app es una práctica de nivel junior desarrollada en **Kotlin** usando **Jetpack Compose** y Material 3. Ideal para aprender los fundamentos del desarrollo Android moderno con una interfaz atractiva, animaciones y manejo de estado.
 
 ---
 
-## ✨ Detalles del proyecto
+## ✨ Características principales
 
-- 🧮 **Calculadora:** Realiza operaciones básicas (➕ suma, ➖ resta, ✖️ multiplicación, ➗ división) entre dos números, seleccionando la operación mediante un menú desplegable.
-- 🌎 **Lista de países:** Muestra una lista de países sudamericanos y su población. Al seleccionar un país, se muestra su población.
-- 🧭 **Navegación:** Menú principal para navegar entre la calculadora y la lista de países.
-- 🎨 **Interfaz:** Sencilla, intuitiva y adaptada a Material 3.
+- 🧮 **Calculadora con historial:**
+  - Suma, resta, multiplicación y división.
+  - Menú desplegable para elegir la operación.
+  - Historial visual y borrado individual o total.
+- 🌎 **Lista interactiva de países:**
+  - Países de Sudamérica y República Dominicana con bandera y población.
+  - Favoritos con icono de estrella y ordenamiento dinámico.
+  - Hora local en tiempo real al seleccionar un país.
+- 🎨 **UI moderna y animada:**
+  - Animaciones de entrada, escala y pulso.
+  - Gradientes y tarjetas decorativas.
+  - Compatible con modo claro y oscuro.
+- 🧭 **Navegación intuitiva:**
+  - Menú principal animado.
+  - Navegación entre calculadora y países.
 
 ---
 
-## 🏗️ Patrón de arquitectura
+## 🖼️ Iconos y visuales
 
-El proyecto utiliza **Jetpack Compose** para construir la interfaz de usuario de forma declarativa. No implementa un patrón arquitectónico complejo como MVVM o MVC. Toda la lógica y el estado se gestionan dentro de los mismos componentes `@Composable`, lo cual es común en proyectos pequeños o de práctica.
+- **Iconos Material:**
+  - Se utilizan iconos de Material Design (`material-icons-extended`) para navegación (flecha de volver), favoritos (estrella), historial (borrar), menús desplegables, etc.
+  - Los iconos se integran en botones, menús y acciones para mejorar la experiencia visual y la usabilidad.
+- **Emojis:**
+  - Se usan emojis en títulos, botones y tarjetas para dar un toque amigable y visualmente atractivo.
+- **Personalización:**
+  - Los colores y estilos de los iconos se adaptan automáticamente al modo claro/oscuro.
 
-- ✅ **Ventajas:**
-  - Fácil de entender para principiantes.
-  - Menos archivos y clases, ideal para prácticas rápidas.
-- ⚠️ **Limitaciones:**
-  - No es escalable para proyectos grandes.
-  - La lógica y la UI están acopladas en los mismos archivos.
+---
+
+## 🏗️ Arquitectura y decisiones técnicas
+
+- **Jetpack Compose:** UI declarativa, todo el estado y lógica en composables.
+- **Material 3:** Colores adaptativos, tipografía y componentes modernos.
+- **Sin MVVM/MVC:** Ideal para prácticas y proyectos pequeños.
+- **Animaciones:** Uso de `animateFloatAsState`, `rememberInfiniteTransition`, `AnimatedVisibility` y más.
+- **Gestión de favoritos:** Con `mutableStateOf(mutableSetOf())` para máxima compatibilidad.
 
 ---
 
@@ -43,21 +55,49 @@ app/
           ├── java/com/example/myapplication15/  # Código fuente principal
           └── res/                              # Recursos de la app
 ```
-- `build.gradle.kts`, `settings.gradle.kts`: Archivos de configuración de Gradle.
+- `build.gradle.kts`, `settings.gradle.kts`: Configuración de dependencias y plugins.
 
 ---
 
 ## ⚙️ Cómo compilar y ejecutar
 
-1. 🌀 Clona este repositorio.
-2. 🛠️ Abre el proyecto en Android Studio.
+1. 🌀 Clona este repositorio:
+   ```bash
+   git clone https://github.com/victortejeda/Calculetorandcountry.git
+   ```
+2. 🛠️ Abre el proyecto en **Android Studio** (recomendado versión Hedgehog o superior).
 3. 🔄 Sincroniza el proyecto con Gradle.
-4. ▶️ Ejecuta la aplicación en un emulador o dispositivo físico.
+4. ▶️ Ejecuta la app en un emulador o dispositivo físico con Android 12+.
 
 ---
 
-## 👥 Créditos
+## 🖼️ Capturas de pantalla
 
-Desarrollado por Victor Tejeda.
+> Puedes agregar aquí imágenes de la app en modo claro y oscuro, mostrando la calculadora, el menú y la lista de países.
 
-Práctica para estudiantes de desarrollo Android junior. 
+---
+
+## 👥 Créditos y autores
+
+**Desarrollado por:**
+- 👨‍💻 Victor Tejeda (owner del repo)
+
+**Práctica sustentada por:**
+- 👨‍💻 Henry Castro — 1-21-4112
+- 👩‍💻 Lissette Rodríguez — 1-19-3824
+- 👨‍💻 Miguel Berroa — 2-16-3694
+
+---
+
+## 💡 Sugerencias para contribuir
+
+¿Quieres mejorar la app? ¡Pull requests y sugerencias son bienvenidas!
+- Haz un fork del repo
+- Crea una rama con tu mejora
+- Haz un PR explicando tu cambio
+
+---
+
+## 📝 Licencia
+
+Este proyecto es solo para fines educativos y de práctica. Puedes usarlo, modificarlo y compartirlo libremente citando a los autores. 

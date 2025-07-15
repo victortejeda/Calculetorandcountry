@@ -413,7 +413,7 @@ fun CountriesScreen(navController: NavController) {
     }
 
     var seleccion by remember { mutableStateOf<Country?>(null) }
-    val favorites = remember { mutableStateSetOf<String>() }
+    val favorites = remember { mutableStateOf(mutableSetOf<String>()) }
     var currentTime by remember { mutableStateOf("") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm:ss a") }
 
@@ -428,7 +428,7 @@ fun CountriesScreen(navController: NavController) {
     }
 
     val sortedCountries = countries.sortedWith(
-        compareByDescending<Country> { it.name in favorites }
+        compareByDescending<Country> { if (favorites.value.contains(it.name)) 1 else 0 }
             .thenBy { it.name }
     )
 
@@ -478,7 +478,7 @@ fun CountriesScreen(navController: NavController) {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(items = sortedCountries, key = { it.name }) { country ->
                     val isSelected = seleccion?.name == country.name
-                    val isFavorite = country.name in favorites
+                    val isFavorite = favorites.value.contains(country.name)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -497,7 +497,7 @@ fun CountriesScreen(navController: NavController) {
                             Text(text = country.flagEmoji, fontSize = 24.sp)
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(text = country.name, modifier = Modifier.weight(1f).padding(vertical = 16.dp), style = MaterialTheme.typography.bodyLarge, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
-                            IconButton(onClick = { if (isFavorite) favorites.remove(country.name) else favorites.add(country.name) }) {
+                            IconButton(onClick = { if (isFavorite) favorites.value.remove(country.name) else favorites.value.add(country.name) }) {
                                 Icon(imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder, contentDescription = "Marcar como favorito", tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }

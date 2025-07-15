@@ -123,30 +123,116 @@ fun MenuScreen(navController: NavController) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.scale(pulseScale)
             )
-            Spacer(modifier = Modifier.height(40.dp))
-            Text(text = "🎯 Selecciona una opción:", style = MaterialTheme.typography.titleMedium)
+            
             Spacer(modifier = Modifier.height(20.dp))
+            
+            // Tarjeta de créditos con animación
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .scale(scaleIn),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+                ),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "👥 Sustentado por:",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "👨‍💻 Henry Castro\n1-21-4112",
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 20.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "👩‍💻 Lissette Rodríguez\n1-19-3824",
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 20.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "👨‍💻 Miguel Berroa\n2-16-3694",
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            Text(
+                text = "🎯 Selecciona una opción:",
+                style = MaterialTheme.typography.titleMedium,
+                alpha = 0.8f
+            )
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            // Botones con animaciones
             Button(
                 onClick = { navController.navigate("calculator") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(56.dp)
+                    .scale(scaleIn),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
                 shape = RoundedCornerShape(12.dp),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                elevation = androidx.compose.material3.ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
             ) {
-                Text(text = "🧮 Calculadora con Historial", fontWeight = FontWeight.Medium)
+                Text(text = "🧮 Calculadora con Historial", fontSize = 16.sp, fontWeight = FontWeight.Medium)
             }
+            
             Spacer(modifier = Modifier.height(12.dp))
+            
             Button(
                 onClick = { navController.navigate("countries") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    .height(56.dp)
+                    .scale(scaleIn),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
+                ),
                 shape = RoundedCornerShape(12.dp),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                elevation = androidx.compose.material3.ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
             ) {
-                Text(text = "🌎 Lista Interactiva de Países", fontWeight = FontWeight.Medium)
+                Text(text = "🌎 Lista Interactiva de Países", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            }
+            
+            // Elementos decorativos sutiles
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                repeat(3) { index ->
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .scale(pulseScale * (0.8f + index * 0.1f))
+                            .background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                                shape = androidx.compose.foundation.shape.CircleShape
+                            )
+                    )
+                }
             }
         }
     }
@@ -257,19 +343,40 @@ fun CalculatorScreen(navController: NavController) {
             if (history.isEmpty()) {
                 Text("Aún no hay operaciones.", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
             } else {
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    // La clave ahora es el ID único del HistoryEntry, solucionando el crash
-                    items(items = history, key = { it.id }) { entry ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(entry.calculation, modifier = Modifier.weight(1f))
-                            IconButton(onClick = { history.remove(entry) }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Borrar entrada", tint = MaterialTheme.colorScheme.error)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp)
+                    ) {
+                        // La clave ahora es el ID único del HistoryEntry, solucionando el crash
+                        items(items = history, key = { it.id }) { entry ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    entry.calculation, 
+                                    modifier = Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                IconButton(onClick = { history.remove(entry) }) {
+                                    Icon(
+                                        Icons.Default.Delete, 
+                                        contentDescription = "Borrar entrada", 
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
                             }
                         }
                     }

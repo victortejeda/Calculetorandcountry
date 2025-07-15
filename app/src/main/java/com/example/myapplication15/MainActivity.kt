@@ -55,6 +55,85 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringSetPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModelScope
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import kotlinx.coroutines.launch
+
+val Context.dataStore by preferencesDataStore(name = "app_prefs")
+
+// ViewModel para manejar DataStore
+class MainViewModel(application: Application) : AndroidViewModel(application) {
+    private val dataStore = application.dataStore
+    private val HISTORY_KEY = stringSetPreferencesKey("calc_history")
+    private val FAVORITES_KEY = stringSetPreferencesKey("country_favorites")
+
+    var calcHistory by mutableStateOf(listOf<String>())
+        private set
+    var countryFavorites by mutableStateOf(setOf<String>())
+        private set
+
+    init {
+        viewModelScope.launch {
+            loadHistory()
+            loadFavorites()
+        }
+    }
+
+    suspend fun loadHistory() {
+        calcHistory = dataStore.data.map { prefs ->
+            prefs[HISTORY_KEY]?.toList() ?: emptyList()
+        }.first()
+    }
+    suspend fun loadFavorites() {
+        countryFavorites = dataStore.data.map { prefs ->
+            prefs[FAVORITES_KEY] ?: emptySet()
+        }.first()
+    }
+    fun addHistory(entry: String) {
+        viewModelScope.launch {
+            val updated = calcHistory.toMutableList().apply { add(0, entry) }
+            dataStore.edit { it[HISTORY_KEY] = updated.toSet() }
+            calcHistory = updated
+        }
+    }
+    fun clearHistory() {
+        viewModelScope.launch {
+            dataStore.edit { it[HISTORY_KEY] = emptySet() }
+            calcHistory = emptyList()
+        }
+    }
+    fun removeHistory(entry: String) {
+        viewModelScope.launch {
+            val updated = calcHistory.toMutableList().apply { remove(entry) }
+            dataStore.edit { it[HISTORY_KEY] = updated.toSet() }
+            calcHistory = updated
+        }
+    }
+    fun addFavorite(country: String) {
+        viewModelScope.launch {
+            val updated = countryFavorites.toMutableSet().apply { add(country) }
+            dataStore.edit { it[FAVORITES_KEY] = updated }
+            countryFavorites = updated
+        }
+    }
+    fun removeFavorite(country: String) {
+        viewModelScope.launch {
+            val updated = countryFavorites.toMutableSet().apply { remove(country) }
+            dataStore.edit { it[FAVORITES_KEY] = updated }
+            countryFavorites = updated
+        }
+    }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,22 +141,23 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplication15Theme {
-                AppNavigation()
+                val viewModel: MainViewModel = viewModel(factory = ViewModelProvider.AndroidViewModelFactory(application))
+                AppNavigation(viewModel)
             }
         }
     }
 }
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(viewModel: MainViewModel) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
         startDestination = "menu"
     ) {
         composable("menu") { MenuScreen(navController) }
-        composable("calculator") { CalculatorScreen(navController) }
-        composable("countries") { CountriesScreen(navController) }
+        composable("calculator") { CalculatorScreen(navController, viewModel) }
+        composable("countries") { CountriesScreen(navController, viewModel) }
     }
 }
 
@@ -157,7 +237,7 @@ data class HistoryEntry(val id: UUID = UUID.randomUUID(), val calculation: Strin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalculatorScreen(navController: NavController) {
+fun CalculatorScreen(navController: NavController, viewModel: MainViewModel) {
     var valor1 by remember { mutableStateOf("") }
     var valor2 by remember { mutableStateOf("") }
     var resultado by remember { mutableStateOf<String?>(null) }
@@ -202,7 +282,7 @@ fun CalculatorScreen(navController: NavController) {
                 NumberFormat.getInstance().format(num2)
             } = $formattedResult"
         // Se añade un nuevo objeto HistoryEntry al historial
-        history.add(0, HistoryEntry(calculation = historyText))
+        viewModel.addHistory(historyText)
     }
 
     Scaffold(
@@ -301,8 +381,8 @@ fun CalculatorScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("Historial", style = MaterialTheme.typography.titleMedium)
-                if (history.isNotEmpty()) {
-                    TextButton(onClick = { history.clear() }) {
+                if (viewModel.calcHistory.isNotEmpty()) {
+                    TextButton(onClick = { viewModel.clearHistory() }) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "Limpiar historial",
@@ -313,7 +393,7 @@ fun CalculatorScreen(navController: NavController) {
                     }
                 }
             }
-            if (history.isEmpty()) {
+            if (viewModel.calcHistory.isEmpty()) {
                 Text(
                     "Aún no hay operaciones.",
                     modifier = Modifier.fillMaxWidth(),
@@ -323,7 +403,7 @@ fun CalculatorScreen(navController: NavController) {
             } else {
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     // La clave ahora es el ID único del HistoryEntry, solucionando el crash
-                    items(items = history, key = { it.id }) { entry ->
+                    items(items = viewModel.calcHistory, key = { it }) { entry ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -331,8 +411,8 @@ fun CalculatorScreen(navController: NavController) {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(entry.calculation, modifier = Modifier.weight(1f))
-                            IconButton(onClick = { history.remove(entry) }) {
+                            Text(entry, modifier = Modifier.weight(1f))
+                            IconButton(onClick = { viewModel.removeHistory(entry) }) {
                                 Icon(
                                     Icons.Default.Delete,
                                     contentDescription = "Borrar entrada",
@@ -356,7 +436,7 @@ data class Country(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CountriesScreen(navController: NavController) {
+fun CountriesScreen(navController: NavController, viewModel: MainViewModel) {
     val countries = remember {
         listOf(
             Country("Argentina", 45_810_000L, "🇦🇷", "America/Argentina/Buenos_Aires"),
@@ -389,7 +469,7 @@ fun CountriesScreen(navController: NavController) {
     }
 
     val sortedCountries = countries.sortedWith(
-        compareByDescending<Country> { if (favorites.value.contains(it.name)) 1 else 0 }
+        compareByDescending<Country> { if (viewModel.countryFavorites.contains(it.name)) 1 else 0 }
             .thenBy { it.name }
     )
 
@@ -450,7 +530,7 @@ fun CountriesScreen(navController: NavController) {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(items = sortedCountries, key = { it.name }) { country ->
                     val isSelected = seleccion?.name == country.name
-                    val isFavorite = favorites.value.contains(country.name)
+                    val isFavorite = viewModel.countryFavorites.contains(country.name)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -476,8 +556,8 @@ fun CountriesScreen(navController: NavController) {
                             )
                             IconButton(
                                 onClick = {
-                                    if (isFavorite) favorites.value.remove(country.name)
-                                    else favorites.value.add(country.name)
+                                    if (isFavorite) viewModel.removeFavorite(country.name)
+                                    else viewModel.addFavorite(country.name)
                                 }
                             ) {
                                 Icon(
@@ -485,6 +565,28 @@ fun CountriesScreen(navController: NavController) {
                                     contentDescription = "Marcar como favorito",
                                     tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                            }
+                        }
+                    }
+                }
+            }
+            // Mostrar sección de favoritos (score)
+            if (viewModel.countryFavorites.isNotEmpty()) {
+                Text("⭐ Tus favoritos:", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(vertical = 8.dp))
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.heightIn(max = 200.dp)) {
+                    items(items = sortedCountries.filter { viewModel.countryFavorites.contains(it.name) }, key = { it.name }) { country ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = country.flagEmoji, fontSize = 20.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = country.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
+                            IconButton(onClick = { viewModel.removeFavorite(country.name) }) {
+                                Icon(Icons.Filled.Delete, contentDescription = "Quitar de favoritos", tint = MaterialTheme.colorScheme.error)
                             }
                         }
                     }
@@ -506,7 +608,7 @@ fun MenuScreenPreview() {
 @Composable
 fun CalculatorScreenPreview() {
     MyApplication15Theme {
-        CalculatorScreen(rememberNavController())
+        CalculatorScreen(rememberNavController(), viewModel(ViewModelProvider.AndroidViewModelFactory(Application())))
     }
 }
 
@@ -514,6 +616,6 @@ fun CalculatorScreenPreview() {
 @Composable
 fun CountriesScreenPreview() {
     MyApplication15Theme {
-        CountriesScreen(rememberNavController())
+        CountriesScreen(rememberNavController(), viewModel(ViewModelProvider.AndroidViewModelFactory(Application())))
     }
 }

@@ -5,63 +5,41 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -76,6 +54,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.UUID
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,12 +62,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplication15Theme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    AppNavigation()
-                }
+                AppNavigation()
             }
         }
     }
@@ -97,43 +71,150 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    
-    NavHost(navController = navController, startDestination = "menu") {
-        composable("menu") {
-            MenuScreen(navController)
-        }
-        composable("calculator") {
-            CalculatorScreen(navController)
-        }
-        composable("countries") {
-            CountriesScreen(navController)
+    NavHost(
+        navController = navController,
+        startDestination = "menu"
+    ) {
+        composable("menu") { MenuScreen(navController) }
+        composable("calculator") { CalculatorScreen(navController) }
+        composable("countries") { CountriesScreen(navController) }
+    }
+}
+
+@Composable
+fun MenuScreen(navController: NavController) {
+    var startAnimation by remember { mutableStateOf(false) }
+    val scaleIn by animateFloatAsState(
+        targetValue = if (startAnimation) 1f else 0.8f,
+        animationSpec = tween(durationMillis = 500),
+        label = "scaleIn"
+    )
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(animation = tween(1000), repeatMode = RepeatMode.Reverse),
+        label = "pulse"
+    )
+    LaunchedEffect(Unit) { startAnimation = true }
+
+    Scaffold { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                            MaterialTheme.colorScheme.surface
+                        )
+                    )
+                )
+                .padding(24.dp)
+                .scale(scaleIn)
+                .alpha(scaleIn),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "🚀 Práctica Android Studio",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.scale(pulseScale)
+            )
+            Spacer(modifier = Modifier.height(40.dp))
+            Text(text = "🎯 Selecciona una opción:", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(
+                onClick = { navController.navigate("calculator") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+            ) {
+                Text(text = "🧮 Calculadora con Historial", fontWeight = FontWeight.Medium)
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = { navController.navigate("countries") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+            ) {
+                Text(text = "🌎 Lista Interactiva de Países", fontWeight = FontWeight.Medium)
+            }
         }
     }
 }
 
+// Data class para el historial para asegurar una clave única
+data class HistoryEntry(val id: UUID = UUID.randomUUID(), val calculation: String)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MenuScreen(navController: NavController) {
-    var animationTrigger by remember { mutableStateOf(false) }
-    
-    LaunchedEffect(Unit) {
-        delay(300)
-        animationTrigger = true
+fun CalculatorScreen(navController: NavController) {
+    var valor1 by remember { mutableStateOf("") }
+    var valor2 by remember { mutableStateOf("") }
+    var resultado by remember { mutableStateOf<String?>(null) }
+    var operacionSeleccionada by remember { mutableStateOf("Sumar") }
+    var showMenu by remember { mutableStateOf(false) }
+    val operaciones = listOf("Sumar", "Restar", "Multiplicar", "Dividir")
+    // El historial ahora es una lista de HistoryEntry
+    val history = remember { mutableStateListOf<HistoryEntry>() }
+
+    fun getOperatorSymbol(op: String): String = when (op) {
+        "Sumar" -> "+"
+        "Restar" -> "-"
+        "Multiplicar" -> "×"
+        "Dividir" -> "÷"
+        else -> ""
     }
-    
+
+    fun calcular() {
+        val num1 = valor1.toDoubleOrNull()
+        val num2 = valor2.toDoubleOrNull()
+        if (num1 == null || num2 == null) {
+            resultado = "Error: Ingrese valores numéricos válidos."
+            return
+        }
+        val res = when (operacionSeleccionada) {
+            "Sumar" -> num1 + num2
+            "Restar" -> num1 - num2
+            "Multiplicar" -> num1 * num2
+            "Dividir" -> {
+                if (num2 == 0.0) {
+                    resultado = "Error: No se puede dividir por cero."
+                    return
+                }
+                num1 / num2
+            }
+            else -> 0.0
+        }
+        val formattedResult = NumberFormat.getInstance().format(res)
+        resultado = "Resultado: $formattedResult"
+        val historyText =
+            "${NumberFormat.getInstance().format(num1)} ${getOperatorSymbol(operacionSeleccionada)} ${
+                NumberFormat.getInstance().format(num2)
+            } = $formattedResult"
+        // Se añade un nuevo objeto HistoryEntry al historial
+        history.add(0, HistoryEntry(calculation = historyText))
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
-                    Text(
-                        "🧮 Calculadora & Países",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                title = { Text("🧮 Calculadora") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
             )
         }
     ) { innerPadding ->
@@ -142,581 +223,56 @@ fun MenuScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            AnimatedVisibility(
-                visible = animationTrigger,
-                enter = fadeIn(animationSpec = tween(800)) + slideInVertically(
-                    initialOffsetY = { -100 },
-                    animationSpec = tween(800)
-                ),
-                exit = fadeOut(animationSpec = tween(300))
-            ) {
-                Text(
-                    text = "¡Bienvenido!",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
+            // ... (La parte de la UI para los botones y campos de texto no cambia)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(value = valor1, onValueChange = { valor1 = it.replace(',', '.') }, label = { Text("Valor 1") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), singleLine = true)
+                OutlinedTextField(value = valor2, onValueChange = { valor2 = it.replace(',', '.') }, label = { Text("Valor 2") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f), singleLine = true)
             }
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            AnimatedVisibility(
-                visible = animationTrigger,
-                enter = fadeIn(animationSpec = tween(800, delayMillis = 200)) + slideInVertically(
-                    initialOffsetY = { 100 },
-                    animationSpec = tween(800, delayMillis = 200)
-                ),
-                exit = fadeOut(animationSpec = tween(300))
-            ) {
-                Button(
-                    onClick = { navController.navigate("calculator") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text(
-                        text = "🧮 Calculadora",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+            Box {
+                OutlinedTextField(value = operacionSeleccionada, onValueChange = {}, readOnly = true, label = { Text("Operación") }, trailingIcon = { IconButton(onClick = { showMenu = !showMenu }) { Icon(Icons.Default.KeyboardArrowDown, "Abrir menú") } }, modifier = Modifier.fillMaxWidth())
+                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }, modifier = Modifier.fillMaxWidth()) {
+                    operaciones.forEach { op -> DropdownMenuItem(text = { Text(op) }, onClick = { operacionSeleccionada = op; showMenu = false }) }
                 }
             }
-            
+            Button(onClick = { calcular() }, modifier = Modifier.fillMaxWidth().height(50.dp)) { Text(text = "🧮 OPERAR", fontWeight = FontWeight.Bold) }
+            resultado?.let {
+                val isError = it.startsWith("Error:")
+                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = if (isError) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer)) {
+                    Text(text = it, modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium, color = if (isError) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer)
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            
-            AnimatedVisibility(
-                visible = animationTrigger,
-                enter = fadeIn(animationSpec = tween(800, delayMillis = 400)) + slideInVertically(
-                    initialOffsetY = { 100 },
-                    animationSpec = tween(800, delayMillis = 400)
-                ),
-                exit = fadeOut(animationSpec = tween(300))
-            ) {
-                Button(
-                    onClick = { navController.navigate("countries") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text(
-                        text = "🌎 Países",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CalculatorScreen(navController: NavController) {
-    var display by remember { mutableStateOf("0") }
-    var operation by remember { mutableStateOf("") }
-    var firstNumber by remember { mutableStateOf(0.0) }
-    var newNumber by remember { mutableStateOf(true) }
-    var history by remember { mutableStateOf(listOf<String>()) }
-    
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("🧮 Calculadora") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            // Display
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-                    .padding(bottom = 16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Bottom
-                ) {
-                    Text(
-                        text = display,
-                        style = MaterialTheme.typography.headlineLarge,
-                        textAlign = TextAlign.End,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-            
-            // History
-            if (history.isNotEmpty()) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .padding(bottom = 16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                    )
-                ) {
-                    LazyColumn(
-                        modifier = Modifier.padding(8.dp)
-                    ) {
-                        items(history.takeLast(3)) { item ->
-                            Text(
-                                text = item,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
-                            )
-                        }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("Historial", style = MaterialTheme.typography.titleMedium)
+                if (history.isNotEmpty()) {
+                    TextButton(onClick = { history.clear() }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Limpiar historial", modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text("Limpiar Todo")
                     }
                 }
             }
-            
-            // Buttons
-            val buttonSpacing = 8.dp
-            val buttonSize = 70.dp
-            
-            // Row 1: Clear, +/-, %, ÷
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(buttonSpacing)
-            ) {
-                Button(
-                    onClick = {
-                        display = "0"
-                        operation = ""
-                        firstNumber = 0.0
-                        newNumber = true
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("C", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        if (display != "0") {
-                            display = if (display.startsWith("-")) display.substring(1) else "-$display"
+            if (history.isEmpty()) {
+                Text("Aún no hay operaciones.", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium)
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    // La clave ahora es el ID único del HistoryEntry, solucionando el crash
+                    items(items = history, key = { it.id }) { entry ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(entry.calculation, modifier = Modifier.weight(1f))
+                            IconButton(onClick = { history.remove(entry) }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Borrar entrada", tint = MaterialTheme.colorScheme.error)
+                            }
                         }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("+/-", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        val number = display.toDoubleOrNull() ?: 0.0
-                        display = (number / 100).toString()
-                        newNumber = true
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("%", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        operation = "÷"
-                        firstNumber = display.toDoubleOrNull() ?: 0.0
-                        newNumber = true
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.tertiary
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("÷", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(buttonSpacing))
-            
-            // Row 2: 7, 8, 9, ×
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(buttonSpacing)
-            ) {
-                Button(
-                    onClick = {
-                        if (newNumber) {
-                            display = "7"
-                            newNumber = false
-                        } else {
-                            display += "7"
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("7", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        if (newNumber) {
-                            display = "8"
-                            newNumber = false
-                        } else {
-                            display += "8"
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("8", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        if (newNumber) {
-                            display = "9"
-                            newNumber = false
-                        } else {
-                            display += "9"
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("9", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        operation = "×"
-                        firstNumber = display.toDoubleOrNull() ?: 0.0
-                        newNumber = true
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.tertiary
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("×", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(buttonSpacing))
-            
-            // Row 3: 4, 5, 6, -
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(buttonSpacing)
-            ) {
-                Button(
-                    onClick = {
-                        if (newNumber) {
-                            display = "4"
-                            newNumber = false
-                        } else {
-                            display += "4"
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("4", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        if (newNumber) {
-                            display = "5"
-                            newNumber = false
-                        } else {
-                            display += "5"
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("5", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        if (newNumber) {
-                            display = "6"
-                            newNumber = false
-                        } else {
-                            display += "6"
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("6", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        operation = "-"
-                        firstNumber = display.toDoubleOrNull() ?: 0.0
-                        newNumber = true
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.tertiary
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("-", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(buttonSpacing))
-            
-            // Row 4: 1, 2, 3, +
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(buttonSpacing)
-            ) {
-                Button(
-                    onClick = {
-                        if (newNumber) {
-                            display = "1"
-                            newNumber = false
-                        } else {
-                            display += "1"
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("1", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        if (newNumber) {
-                            display = "2"
-                            newNumber = false
-                        } else {
-                            display += "2"
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("2", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        if (newNumber) {
-                            display = "3"
-                            newNumber = false
-                        } else {
-                            display += "3"
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("3", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        operation = "+"
-                        firstNumber = display.toDoubleOrNull() ?: 0.0
-                        newNumber = true
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.tertiary
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(buttonSpacing))
-            
-            // Row 5: 0, ., =
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(buttonSpacing)
-            ) {
-                Button(
-                    onClick = {
-                        if (newNumber) {
-                            display = "0"
-                            newNumber = false
-                        } else {
-                            display += "0"
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(2f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = RoundedCornerShape(35.dp)
-                ) {
-                    Text("0", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        if (!display.contains(".")) {
-                            display += "."
-                            newNumber = false
-                        }
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text(".", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                Button(
-                    onClick = {
-                        val secondNumber = display.toDoubleOrNull() ?: 0.0
-                        val result = when (operation) {
-                            "+" -> firstNumber + secondNumber
-                            "-" -> firstNumber - secondNumber
-                            "×" -> firstNumber * secondNumber
-                            "÷" -> if (secondNumber != 0.0) firstNumber / secondNumber else 0.0
-                            else -> secondNumber
-                        }
-                        
-                        val operationSymbol = when (operation) {
-                            "+" -> "+"
-                            "-" -> "-"
-                            "×" -> "×"
-                            "÷" -> "÷"
-                            else -> ""
-                        }
-                        
-                        if (operation.isNotEmpty()) {
-                            val historyEntry = "${firstNumber} $operationSymbol $secondNumber = $result"
-                            history = history + historyEntry
-                        }
-                        
-                        display = result.toString()
-                        operation = ""
-                        firstNumber = result
-                        newNumber = true
-                    },
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ),
-                    shape = CircleShape
-                ) {
-                    Text("=", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
@@ -750,7 +306,7 @@ fun CountriesScreen(navController: NavController) {
     }
 
     var seleccion by remember { mutableStateOf<Country?>(null) }
-    val favorites = remember { mutableStateOf(mutableSetOf<String>()) }
+    val favorites = remember { mutableStateSetOf<String>() }
     var currentTime by remember { mutableStateOf("") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm:ss a") }
 
@@ -765,7 +321,7 @@ fun CountriesScreen(navController: NavController) {
     }
 
     val sortedCountries = countries.sortedWith(
-        compareByDescending<Country> { if (favorites.value.contains(it.name)) 1 else 0 }
+        compareByDescending<Country> { it.name in favorites }
             .thenBy { it.name }
     )
 
@@ -788,6 +344,7 @@ fun CountriesScreen(navController: NavController) {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
+
             AnimatedVisibility(
                 visible = seleccion != null,
                 enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
@@ -801,23 +358,11 @@ fun CountriesScreen(navController: NavController) {
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
-                                text = "${country.flagEmoji} ${country.name}",
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
-                            )
+                            Text(text = "${country.flagEmoji} ${country.name}", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onTertiaryContainer)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Población: ${NumberFormat.getInstance(Locale.getDefault()).format(country.population)}",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
-                            )
+                            Text(text = "Población: ${NumberFormat.getInstance(Locale.getDefault()).format(country.population)}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onTertiaryContainer)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Hora Local: $currentTime",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
-                            )
+                            Text(text = "Hora Local: $currentTime", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onTertiaryContainer)
                         }
                     }
                 }
@@ -826,7 +371,7 @@ fun CountriesScreen(navController: NavController) {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(items = sortedCountries, key = { it.name }) { country ->
                     val isSelected = seleccion?.name == country.name
-                    val isFavorite = favorites.value.contains(country.name)
+                    val isFavorite = country.name in favorites
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -844,28 +389,43 @@ fun CountriesScreen(navController: NavController) {
                         ) {
                             Text(text = country.flagEmoji, fontSize = 24.sp)
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = country.name,
-                                modifier = Modifier.weight(1f).padding(vertical = 16.dp),
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                            )
-                            IconButton(
-                                onClick = {
-                                    if (isFavorite) favorites.value.remove(country.name)
-                                    else favorites.value.add(country.name)
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                                    contentDescription = "Marcar como favorito",
-                                    tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                            Text(text = country.name, modifier = Modifier.weight(1f).padding(vertical = 16.dp), style = MaterialTheme.typography.bodyLarge, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+                            IconButton(onClick = { if (isFavorite) favorites.remove(country.name) else favorites.add(country.name) }) {
+                                Icon(imageVector = if (isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder, contentDescription = "Marcar como favorito", tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+// NO NECESITAMOS ESTAS FUNCIONES FALSAS
+// private fun Unit.add(name: String) { ... }
+// private fun Unit.remove(name: String) { ... }
+// ... etc.
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun MenuScreenPreview() {
+    MyApplication15Theme {
+        MenuScreen(rememberNavController())
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CalculatorScreenPreview() {
+    MyApplication15Theme {
+        CalculatorScreen(rememberNavController())
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CountriesScreenPreview() {
+    MyApplication15Theme {
+        CountriesScreen(rememberNavController())
     }
 }
